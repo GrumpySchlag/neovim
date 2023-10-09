@@ -280,12 +280,70 @@ require('lazy').setup({
     ---@diagnostic disable-next-line: missing-fields
     opts = {
       signs = {
-        add = { text = '+' }, ---@diagnostic disable-line: missing-fields
-        change = { text = '~' }, ---@diagnostic disable-line: missing-fields
-        delete = { text = '_' }, ---@diagnostic disable-line: missing-fields
-        topdelete = { text = '‾' }, ---@diagnostic disable-line: missing-fields
-        changedelete = { text = '~' }, ---@diagnostic disable-line: missing-fields
+        add = { text = '▍' },
+        change = { text = '▍' },
+        delete = { text = '_' },
+        topdelete = { text = '‾' },
+        changedelete = { text = '~' },
+        untracked = { text = '▍' },
       },
+      current_line_blame = true,
+      on_attach = function(bufnr)
+        local gs = package.loaded.gitsigns
+
+        local function map(mode, l, r, opts)
+          opts = opts or {}
+          opts.buffer = bufnr
+          vim.keymap.set(mode, l, r, opts)
+        end
+
+        -- Navigation
+        map('n', ']c', function()
+          if vim.wo.diff then
+            return ']c'
+          end
+          vim.schedule(function()
+            gs.next_hunk()
+          end)
+          return '<Ignore>'
+        end, { expr = true })
+
+        map('n', '[c', function()
+          if vim.wo.diff then
+            return '[c'
+          end
+          vim.schedule(function()
+            gs.prev_hunk()
+          end)
+          return '<Ignore>'
+        end, { expr = true })
+
+        -- Actions
+        map('n', '<leader>hs', gs.stage_hunk)
+        map('n', '<leader>hr', gs.reset_hunk)
+        map('v', '<leader>hs', function()
+          gs.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end)
+        map('v', '<leader>hr', function()
+          gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end)
+        map('n', '<leader>hS', gs.stage_buffer)
+        map('n', '<leader>hu', gs.undo_stage_hunk)
+        map('n', '<leader>hR', gs.reset_buffer)
+        map('n', '<leader>hp', gs.preview_hunk)
+        map('n', '<leader>hb', function()
+          gs.blame_line { full = true }
+        end)
+        map('n', '<leader>tb', gs.toggle_current_line_blame)
+        map('n', '<leader>hd', gs.diffthis)
+        map('n', '<leader>hD', function()
+          gs.diffthis '~'
+        end)
+        map('n', '<leader>td', gs.toggle_deleted)
+
+        -- Text object
+        map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+      end,
     },
   },
 
@@ -601,7 +659,6 @@ require('lazy').setup({
       ---@type table<string, vim.lsp.Config>
       local servers = {
         -- clangd = {},
-        -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
         --
@@ -614,6 +671,37 @@ require('lazy').setup({
         stylua = {}, -- Used to format Lua code
 
         -- Special Lua Config, as recommended by neovim help docs
+        --
+        cssls = {},
+        docker_compose_language_service = {},
+        dockerls = {},
+        -- emmet_ls = {},
+        emmet_language_server = {
+          filetypes = {
+            'css',
+            'eruby',
+            'html',
+            'htmldjango',
+            'javascriptreact',
+            'less',
+            'pug',
+            'sass',
+            'scss',
+            'twig',
+            'typescriptreact',
+          },
+        },
+        eslint = {
+          settings = {
+            -- helps eslint find the eslintrc when it's placed in a subfolder instead of the cwd root
+            workingDirectory = { mode = 'auto' },
+          },
+        },
+        gopls = {},
+        graphql = {},
+        html = { filetypes = { 'html', 'twig', 'hbs' } },
+        jdtls = {},
+        jsonls = {},
         lua_ls = {
           on_init = function(client)
             client.server_capabilities.documentFormattingProvider = false -- Disable formatting (formatting is done by stylua)
@@ -646,6 +734,58 @@ require('lazy').setup({
             },
           },
         },
+        phpactor = {
+          -- init_options = {
+          -- ['language_server_worse_reflection.inlay_hints.enable'] = true,
+          -- -- ["language_server_worse_reflection.inlay_hints.types"] = true,
+          -- ['language_server_worse_reflection.inlay_hints.params'] = true,
+          -- },
+        },
+        rust_analyzer = {
+          ['rust-analyzer'] = {
+            -- completion = {
+            -- postfix = {
+            -- enable = false,
+            -- },
+            -- },
+            check = {
+              command = 'clippy',
+            },
+            cargo = {
+              allFeatures = true,
+            },
+            -- inlayHints = {
+            -- closureReturnTypeHints = { enable = true },
+            -- },
+          },
+        },
+        svelte = {},
+        tailwindcss = {},
+        tsserver = {
+          -- javascript = {
+          -- inlayHints = {
+          -- includeInlayEnumMemberValueHints = true,
+          -- includeInlayFunctionLikeReturnTypeHints = true,
+          -- includeInlayFunctionParameterTypeHints = true,
+          -- includeInlayParameterNameHints = 'all',
+          -- includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+          -- includeInlayPropertyDeclarationTypeHints = true,
+          -- includeInlayVariableTypeHints = true,
+          -- },
+          -- },
+          -- typescript = {
+          -- inlayHints = {
+          -- includeInlayEnumMemberValueHints = true,
+          -- includeInlayFunctionLikeReturnTypeHints = true,
+          -- includeInlayFunctionParameterTypeHints = true,
+          -- includeInlayParameterNameHints = 'all',
+          -- includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+          -- includeInlayPropertyDeclarationTypeHints = true,
+          -- includeInlayVariableTypeHints = true,
+          -- },
+          -- },
+        },
+        yamlls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -889,7 +1029,39 @@ require('lazy').setup({
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
     config = function()
       -- ensure basic parser are installed
-      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+      local parsers = {
+
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'cpp',
+        'css',
+        'dockerfile',
+        'gitignore',
+        'go',
+        'graphql',
+        'javascript',
+        'json',
+        'php',
+        'python',
+        'regex',
+        'rust',
+        'scss',
+        'sql',
+        'tsx',
+        'typescript',
+        'twig',
+        'yaml',
+
+        }
       require('nvim-treesitter').install(parsers)
 
       ---@param buf integer
@@ -958,7 +1130,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
