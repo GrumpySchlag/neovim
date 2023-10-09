@@ -237,7 +237,6 @@ require('lazy').setup({
   --
   -- Use `opts = {}` to force a plugin to be loaded.
   --
-
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
@@ -247,12 +246,70 @@ require('lazy').setup({
     'lewis6991/gitsigns.nvim',
     opts = {
       signs = {
-        add = { text = '+' },
-        change = { text = '~' },
+        add = { text = '▍' },
+        change = { text = '▍' },
         delete = { text = '_' },
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
+        untracked = { text = '▍' },
       },
+      current_line_blame = true,
+      on_attach = function(bufnr)
+        local gs = package.loaded.gitsigns
+
+        local function map(mode, l, r, opts)
+          opts = opts or {}
+          opts.buffer = bufnr
+          vim.keymap.set(mode, l, r, opts)
+        end
+
+        -- Navigation
+        map('n', ']c', function()
+          if vim.wo.diff then
+            return ']c'
+          end
+          vim.schedule(function()
+            gs.next_hunk()
+          end)
+          return '<Ignore>'
+        end, { expr = true })
+
+        map('n', '[c', function()
+          if vim.wo.diff then
+            return '[c'
+          end
+          vim.schedule(function()
+            gs.prev_hunk()
+          end)
+          return '<Ignore>'
+        end, { expr = true })
+
+        -- Actions
+        map('n', '<leader>hs', gs.stage_hunk)
+        map('n', '<leader>hr', gs.reset_hunk)
+        map('v', '<leader>hs', function()
+          gs.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end)
+        map('v', '<leader>hr', function()
+          gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end)
+        map('n', '<leader>hS', gs.stage_buffer)
+        map('n', '<leader>hu', gs.undo_stage_hunk)
+        map('n', '<leader>hR', gs.reset_buffer)
+        map('n', '<leader>hp', gs.preview_hunk)
+        map('n', '<leader>hb', function()
+          gs.blame_line { full = true }
+        end)
+        map('n', '<leader>tb', gs.toggle_current_line_blame)
+        map('n', '<leader>hd', gs.diffthis)
+        map('n', '<leader>hD', function()
+          gs.diffthis '~'
+        end)
+        map('n', '<leader>td', gs.toggle_deleted)
+
+        -- Text object
+        map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+      end,
     },
   },
 
@@ -570,18 +627,37 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`tsserver`) will work just fine
-        -- tsserver = {},
-        --
-
+        cssls = {},
+        docker_compose_language_service = {},
+        dockerls = {},
+        -- emmet_ls = {},
+        emmet_language_server = {
+          filetypes = {
+            'css',
+            'eruby',
+            'html',
+            'htmldjango',
+            'javascriptreact',
+            'less',
+            'pug',
+            'sass',
+            'scss',
+            'twig',
+            'typescriptreact',
+          },
+        },
+        eslint = {
+          settings = {
+            -- helps eslint find the eslintrc when it's placed in a subfolder instead of the cwd root
+            workingDirectory = { mode = 'auto' },
+          },
+        },
+        gopls = {},
+        graphql = {},
+        html = { filetypes = { 'html', 'twig', 'hbs' } },
+        jdtls = {},
+        jsonls = {},
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
@@ -596,6 +672,58 @@ require('lazy').setup({
             },
           },
         },
+        phpactor = {
+          -- init_options = {
+          -- ['language_server_worse_reflection.inlay_hints.enable'] = true,
+          -- -- ["language_server_worse_reflection.inlay_hints.types"] = true,
+          -- ['language_server_worse_reflection.inlay_hints.params'] = true,
+          -- },
+        },
+        rust_analyzer = {
+          ['rust-analyzer'] = {
+            -- completion = {
+            -- postfix = {
+            -- enable = false,
+            -- },
+            -- },
+            check = {
+              command = 'clippy',
+            },
+            cargo = {
+              allFeatures = true,
+            },
+            -- inlayHints = {
+            -- closureReturnTypeHints = { enable = true },
+            -- },
+          },
+        },
+        svelte = {},
+        tailwindcss = {},
+        tsserver = {
+          -- javascript = {
+          -- inlayHints = {
+          -- includeInlayEnumMemberValueHints = true,
+          -- includeInlayFunctionLikeReturnTypeHints = true,
+          -- includeInlayFunctionParameterTypeHints = true,
+          -- includeInlayParameterNameHints = 'all',
+          -- includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+          -- includeInlayPropertyDeclarationTypeHints = true,
+          -- includeInlayVariableTypeHints = true,
+          -- },
+          -- },
+          -- typescript = {
+          -- inlayHints = {
+          -- includeInlayEnumMemberValueHints = true,
+          -- includeInlayFunctionLikeReturnTypeHints = true,
+          -- includeInlayFunctionParameterTypeHints = true,
+          -- includeInlayParameterNameHints = 'all',
+          -- includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+          -- includeInlayPropertyDeclarationTypeHints = true,
+          -- includeInlayVariableTypeHints = true,
+          -- },
+          -- },
+        },
+        yamlls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -844,7 +972,37 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'cpp',
+        'css',
+        'dockerfile',
+        'gitignore',
+        'go',
+        'graphql',
+        'javascript',
+        'json',
+        'php',
+        'python',
+        'regex',
+        'rust',
+        'scss',
+        'sql',
+        'tsx',
+        'typescript',
+        'twig',
+        'yaml',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -892,7 +1050,7 @@ require('lazy').setup({
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
