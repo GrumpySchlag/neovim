@@ -54,6 +54,7 @@ return {
       -- Makes a best effort to setup the various debuggers with
       -- reasonable debug configurations
       automatic_installation = true,
+      automatic_setup = true,
 
       -- You can provide additional configuration to the handlers,
       -- see mason-nvim-dap README for more information
@@ -99,6 +100,22 @@ return {
         -- On Windows delve must be run attached or it crashes.
         -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
         detached = vim.fn.has 'win32' == 0,
+      },
+    }
+
+    dap.adapters.php = {
+      type = 'executable',
+      command = vim.fn.stdpath 'data' .. '/mason/bin/php-debug-adapter',
+    }
+    dap.configurations.php = {
+      {
+        type = 'php',
+        request = 'launch',
+        name = 'Listen for Xdebug',
+        port = '9003',
+        -- pathMappings = {
+        --   ['/var/www/laravel'] = '${workspaceFolder}',
+        -- },
       },
     }
   end,
