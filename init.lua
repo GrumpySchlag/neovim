@@ -116,6 +116,18 @@ vim.o.showmode = false
 --  See `:help 'clipboard'`
 vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 
+vim.g.clipboard = {
+  name = 'tmuxclipboard',
+  copy = {
+    ['+'] = 'tmux load-buffer -w -',
+    ['*'] = 'tmux load-buffer -w -',
+  },
+  paste = {
+    ['+'] = 'tmux save-buffer -',
+    ['*'] = 'tmux save-buffer -',
+  },
+}
+
 -- Enable break indent
 vim.o.breakindent = true
 
@@ -480,7 +492,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sc', builtin.commands, { desc = '[S]earch [C]ommands' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
       vim.keymap.set('n', '<C-p>', function()
-        require('telescope.builtin').find_files(require('telescope.themes').get_dropdown { previewer = false })
+        require('telescope.builtin').find_files(require('telescope.themes').get_dropdown { previewer = false, hidden = true })
       end, {})
 
       -- This runs on LSP attach per buffer (see main LSP attach function in 'neovim/nvim-lspconfig' config for more info,
@@ -769,7 +781,7 @@ require('lazy').setup({
         },
         svelte = {},
         tailwindcss = {},
-        tsserver = {
+        ts_ls = {
           -- javascript = {
           -- inlayHints = {
           -- includeInlayEnumMemberValueHints = true,
@@ -793,6 +805,7 @@ require('lazy').setup({
           -- },
           -- },
         },
+        twiggy_language_server = {},
         yamlls = {},
       }
 
@@ -806,6 +819,16 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         -- You can add other tools here that you want Mason to install
+        'djlint',
+        'jsonlint',
+        'php-cs-fixer',
+        'phpcbf',
+        'prettier',
+        'prettierd',
+        'stylua',
+        'twigcs',
+        'twig-cs-fixer',
+        'yamllint',
       })
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }

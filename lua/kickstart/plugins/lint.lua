@@ -8,7 +8,25 @@ return {
   config = function()
     local lint = require 'lint'
     lint.linters_by_ft = {
-      markdown = { 'markdownlint' }, -- Make sure to install `markdownlint` via mason / npm
+      markdown = { 'vale', 'markdownlint' },
+      fish = { 'fish' },
+      bash = { 'shellcheck' },
+      go = { 'golangcilint' },
+      python = { 'ruff', 'mypy' }, -- flake8 a bit too strict
+      rst = { 'rstcheck' },
+      sh = { 'shellcheck' },
+      -- tex = { "chktex" },
+      zsh = { 'shellcheck' },
+      -- javascript = { 'eslint_d' },
+      -- javascriptreact = { 'eslint_d' },
+      -- typescript = { 'eslint_d' },
+      -- typescriptreact = { 'eslint_d' },
+      -- brew install yamllint
+      yaml = { 'yamllint' },
+      -- npm install jsonlint -g
+      json = { 'jsonlint' },
+      php = { 'php' },
+      twig = { 'twigcs' },
     }
 
     -- To allow other plugins to add linters to require('lint').linters_by_ft,

@@ -4,6 +4,7 @@ return {
     require('mason-tool-installer').setup {
 
       ensure_installed = {
+        'twigcs',
         'djlint',
         'jsonlint',
         'php-cs-fixer',
