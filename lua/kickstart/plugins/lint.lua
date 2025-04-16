@@ -8,10 +8,10 @@ return {
   config = function()
     local lint = require 'lint'
     lint.linters_by_ft = {
-      markdown = { 'vale', 'markdownlint' },
       fish = { 'fish' },
       bash = { 'shellcheck' },
       go = { 'golangcilint' },
+      markdown = { 'vale', 'markdownlint' },
       python = { 'ruff', 'mypy' }, -- flake8 a bit too strict
       rst = { 'rstcheck' },
       sh = { 'shellcheck' },
@@ -25,7 +25,7 @@ return {
       yaml = { 'yamllint' },
       -- npm install jsonlint -g
       json = { 'jsonlint' },
-      php = { 'php' },
+      php = { 'php', 'phpcs' },
       twig = { 'twigcs' },
     }
 

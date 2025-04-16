@@ -7,6 +7,7 @@ return {
         'twigcs',
         'djlint',
         'jsonlint',
+        'phpcs',
         'php-cs-fixer',
         'phpcbf',
         'prettier',

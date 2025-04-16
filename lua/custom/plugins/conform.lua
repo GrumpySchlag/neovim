@@ -14,7 +14,7 @@ return {
         json = { 'prettierd', 'prettier' },
         json5 = { 'prettierd', 'prettier' },
         lua = { 'stylua' },
-        php = { 'php_cs_fixer', 'phpcbf' },
+        php = { 'phpcbf', 'php_cs_fixer', stop_after_first = true },
         python = { 'isort', 'black' },
         rust = { 'rustfmt' },
         twig = { 'twig-cs-fixer', 'djlint' },
