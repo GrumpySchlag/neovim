@@ -17,7 +17,7 @@ return {
         php = { 'php_cs_fixer', 'phpcbf' },
         python = { 'isort', 'black' },
         rust = { 'rustfmt' },
-        twig = { 'twig-cs-fixer', 'djlint' },
+        twig = { 'djlint', 'twig-cs-fixer' },
         typescript = { 'prettierd', 'prettier' },
         typescriptreact = { 'prettierd', 'prettier' },
         yaml = { 'prettierd', 'prettier' },
