@@ -19,10 +19,11 @@ return {
     require('neo-tree').setup {
       close_if_last_window = true, -- Close Neo-tree if it is the last window left in the ta
       window = {
-        position = 'float',
-        mappings = {
-          ['l'] = 'open',
-        },
+        auto_expand_width = true,
+        -- position = 'float',
+        -- mappings = {
+        --   ['l'] = 'open',
+        -- },
       },
       filesystem = {
         filtered_items = {

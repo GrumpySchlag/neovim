@@ -466,11 +466,12 @@ require('lazy').setup({
           --   mappings = {
           --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
           --   },
-          file_ignore_patterns = { 'vendor/*' },
+          path_display = { 'truncate' },
+          file_ignore_patterns = { 'vendor/*', '^tests/', 'docker/tests/', '^htdocs/modules/contrib', '^htdocs/themes/contrib', '^htdocs/core' },
         },
         pickers = {
           live_grep = {
-            file_ignore_patterns = { '^vendor/', '^htdocs/modules/contrib' },
+            file_ignore_patterns = { '^vendor/', '^tests/', 'docker/tests/', '^htdocs/modules/contrib', '^htdocs/themes/contrib', '^htdocs/core' },
           },
         },
 
@@ -822,7 +823,7 @@ require('lazy').setup({
           },
         },
         gopls = {},
-        graphql = {},
+        -- graphql = {},
         html = { filetypes = { 'html', 'twig', 'hbs' } },
         jdtls = {},
         jsonls = {},
@@ -910,7 +911,18 @@ require('lazy').setup({
           -- },
         },
         twiggy_language_server = {},
-        yamlls = {},
+        yamlls = {
+          yaml = {
+            schemaStore = {
+              -- You must disable built-in schemaStore support if you want to use
+              -- this plugin and its advanced options like `ignore`.
+              enable = false,
+              -- Avoid TypeError: Cannot read properties of undefined (reading 'length')
+              url = '',
+            },
+            schemas = require('schemastore').yaml.schemas(),
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -933,6 +945,7 @@ require('lazy').setup({
         'stylua',
         'twigcs',
         'twig-cs-fixer',
+        'xmlformatter',
         'yamllint',
       })
 
@@ -1183,7 +1196,7 @@ require('lazy').setup({
         'dockerfile',
         'gitignore',
         'go',
-        'graphql',
+        -- 'graphql',
         'javascript',
         'json',
         'php',
